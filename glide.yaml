@@ -2,3 +2,5 @@ package: github.com/hendychua/slingring
 import:
 - package: github.com/urfave/cli
   version: ~1.20.0
+- package: github.com/mitchellh/go-homedir
+  version: b8bc1bf767474819792c23f32d8286a45736f1c6

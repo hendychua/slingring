@@ -3,12 +3,18 @@ package main
 import(
   "os"
   "fmt"
+  "log"
+  "path"
+  "io/ioutil"
 
   "github.com/urfave/cli"
+  "github.com/mitchellh/go-homedir"
 )
 
 const appName = "slingring"
 const appVersion = "0.0.1"
+const appSettingsDir = ".slingring"
+const appGlobalSettingsFile = "global.json"
 
 func main() {
   app := cli.NewApp()
@@ -98,4 +104,34 @@ func main() {
   }
 
   app.Run(os.Args)
+}
+
+func init() {
+  // set up the global settings file if it does not exist e.g. running the app for the first time.
+
+  userHomeDir, err := homedir.Dir()
+  check(err)
+
+  globalSettingsDir := path.Join(userHomeDir, appSettingsDir)
+  globalSettingsFilePath := path.Join(globalSettingsDir, appGlobalSettingsFile)
+
+  if _, fileInfoErr := os.Stat(globalSettingsFilePath); os.IsNotExist(fileInfoErr) {
+    log.Println("Global settings file does not exist. Creating...")
+    mkdirErr := os.MkdirAll(globalSettingsDir, 0755)
+    check(mkdirErr)
+
+    // TODO: replace with actual settings
+    contents := []byte("{}")
+    writeFileErr := ioutil.WriteFile(globalSettingsFilePath, contents, 0644)
+    check(writeFileErr)
+
+  } else {
+    check(fileInfoErr)
+  }
+}
+
+func check(err error) {
+  if err != nil {
+    log.Fatal(err)
+  }
 }

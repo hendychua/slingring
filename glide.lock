@@ -1,6 +1,8 @@
-hash: ab67e0d475b340deee50fa2fbde2495c8e85919bd86615490bb1bfba055976b3
-updated: 2017-11-16T21:53:30.252404903+08:00
+hash: ee1e94afe78445c8967c1d33f4f6a47f42086fe48049e746f9f0c29a6c078aa8
+updated: 2017-11-16T23:35:06.269514434+08:00
 imports:
+- name: github.com/mitchellh/go-homedir
+  version: b8bc1bf767474819792c23f32d8286a45736f1c6
 - name: github.com/urfave/cli
   version: cfb38830724cc34fedffe9a2a29fb54fa9169cd1
 testImports: []
