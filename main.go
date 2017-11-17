@@ -6,9 +6,12 @@ import(
   "log"
   "path"
   "io/ioutil"
+  "encoding/json"
 
   "github.com/urfave/cli"
   "github.com/mitchellh/go-homedir"
+
+  "github.com/hendychua/slingring/config"
 )
 
 const appName = "slingring"
@@ -107,7 +110,7 @@ func main() {
 }
 
 func init() {
-  // set up the global settings file if it does not exist e.g. running the app for the first time.
+  // Set up the global settings file if it does not exist. For example, running the app for the first time.
 
   userHomeDir, err := homedir.Dir()
   check(err)
@@ -120,9 +123,11 @@ func init() {
     mkdirErr := os.MkdirAll(globalSettingsDir, 0755)
     check(mkdirErr)
 
-    // TODO: replace with actual settings
-    contents := []byte("{}")
-    writeFileErr := ioutil.WriteFile(globalSettingsFilePath, contents, 0644)
+    defaultConfig := config.Config{BaseBranch: "develop", PullFirst: true, HandleDirtyRepo: config.ABORT}
+    defaultConfigJSON, jsonEncodingErr := json.MarshalIndent(defaultConfig, "", "  ") // 2-spaces indentation
+    check(jsonEncodingErr)
+
+    writeFileErr := ioutil.WriteFile(globalSettingsFilePath, defaultConfigJSON, 0644)
     check(writeFileErr)
 
   } else {
