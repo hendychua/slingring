@@ -101,6 +101,7 @@ func main() {
       Category: "Project",
       Action: func(c *cli.Context) error {
         fmt.Println("add-project: ", c.Args())
+        fmt.Println("add-project: ", c.GlobalString("dimension"))
         return nil
       },
     },
