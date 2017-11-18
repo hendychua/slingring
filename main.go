@@ -4,20 +4,23 @@ import(
   "os"
   "fmt"
   "log"
+  "strings"
   "path"
+  "path/filepath"
   "io/ioutil"
-  "encoding/json"
 
   "github.com/urfave/cli"
   "github.com/mitchellh/go-homedir"
 
   "github.com/hendychua/slingring/config"
+  "github.com/hendychua/slingring/subcommands"
 )
 
 const appName = "slingring"
 const appVersion = "0.0.1"
 const appSettingsDir = ".slingring"
-const appGlobalSettingsFile = "global.json"
+const appGlobalSettingsFile = "globalSettings.json"
+const appGlobalDataFile = "globalData.json"
 
 func main() {
   app := cli.NewApp()
@@ -45,8 +48,8 @@ func main() {
       Description: "name - name of dimension to create\n",
       Category: "Dimension",
       Action: func(c *cli.Context) error {
-        fmt.Println("create: ", c.Args())
-        return nil
+        subcommand := subcommands.CreateDimension{}
+        return subcommand.Run(c.Args())
       },
     },
     {
@@ -56,8 +59,8 @@ func main() {
       Description: "List all the dimensions created. * denotes current dimension.\n",
       Category: "Dimension",
       Action: func(c *cli.Context) error {
-        fmt.Println("list: ", c.Args())
-        return nil
+        subcommand := subcommands.ListDimensions{}
+        return subcommand.Run(c.Args())
       },
     },
     {
@@ -67,8 +70,8 @@ func main() {
       Description: "name - name of dimension to delete\n",
       Category: "Dimension",
       Action: func(c *cli.Context) error {
-        fmt.Println("delete: ", c.Args())
-        return nil
+        subcommand := subcommands.DeleteDimension{}
+        return subcommand.Run(c.Args())
       },
     },
     {
@@ -78,8 +81,8 @@ func main() {
       Description: "name - name of dimension to describe\n",
       Category: "Dimension",
       Action: func(c *cli.Context) error {
-        fmt.Println("describe: ", c.Args())
-        return nil
+        subcommand := subcommands.DescribeDimension{}
+        return subcommand.Run(c.Args())
       },
     },
     {
@@ -89,8 +92,8 @@ func main() {
       Description: "If <name> is not provided, show the current dimension. If <name> is provided, set the current dimension to <name>.\n",
       Category: "Dimension",
       Action: func(c *cli.Context) error {
-        fmt.Println("current-dimension: ", c.Args())
-        return nil
+        subcommand := subcommands.CurrentDimension{}
+        return subcommand.Run(c.Args())
       },
     },
     {
@@ -100,9 +103,9 @@ func main() {
       Description: "Add a project path to dimension.\n   path - directory to add to dimension.\n",
       Category: "Project",
       Action: func(c *cli.Context) error {
-        fmt.Println("add-project: ", c.Args())
-        fmt.Println("add-project: ", c.GlobalString("dimension"))
-        return nil
+        subcommand := subcommands.AddProject{}
+        // TODO: if global option "dimension" is not provided, should get the current dimension context. If it is also not set, error out.
+        return subcommand.Run(c.GlobalString("dimension"), c.Args())
       },
     },
   }
@@ -111,29 +114,58 @@ func main() {
 }
 
 func init() {
-  // Set up the global settings file if it does not exist. For example, running the app for the first time.
+  // Set up the global settings and data file if they do not exist.
+  // For example, running the app for the first time.
 
   userHomeDir, err := homedir.Dir()
   check(err)
 
   globalSettingsDir := path.Join(userHomeDir, appSettingsDir)
-  globalSettingsFilePath := path.Join(globalSettingsDir, appGlobalSettingsFile)
 
-  if _, fileInfoErr := os.Stat(globalSettingsFilePath); os.IsNotExist(fileInfoErr) {
-    log.Println("Global settings file does not exist. Creating...")
-    mkdirErr := os.MkdirAll(globalSettingsDir, 0755)
+  globalSettingsFilePath := path.Join(globalSettingsDir, appGlobalSettingsFile)
+  maybeCreateGlobalFile(globalSettingsFilePath, "settings")
+
+  globalDataFilePath := path.Join(globalSettingsDir, appGlobalDataFile)
+  maybeCreateGlobalFile(globalDataFilePath, "data")
+}
+
+func maybeCreateGlobalFile(f string, fileType string) {
+  if _, fileInfoErr := os.Stat(f); os.IsNotExist(fileInfoErr) {
+    log.Printf("%s does not exist. Creating...\n", f)
+    mkdirErr := os.MkdirAll(filepath.Dir(f), 0755)
     check(mkdirErr)
 
-    defaultConfig := config.Config{BaseBranch: "develop", PullFirst: true, HandleDirtyRepo: config.ABORT}
-    defaultConfigJSON, jsonEncodingErr := json.MarshalIndent(defaultConfig, "", "  ") // 2-spaces indentation
-    check(jsonEncodingErr)
+    var data []byte
+    var err error
 
-    writeFileErr := ioutil.WriteFile(globalSettingsFilePath, defaultConfigJSON, 0644)
+    // reason for not passing data as parameter is so that we only create the structs
+    // only when we have checked that the respective file does not exist and we have to create them.
+    if strings.EqualFold(fileType, "settings") {
+      data, err = getDefaultGlobalSettings()
+      check(err)
+    } else if strings.EqualFold(fileType, "data") {
+      data, err = getDefaultGlobalData()
+      check(err)
+    } else {
+      log.Fatalf("Unexpected global fileType '%s'\n", fileType)
+    }
+
+    writeFileErr := ioutil.WriteFile(f, data, 0644)
     check(writeFileErr)
 
   } else {
     check(fileInfoErr)
   }
+}
+
+func getDefaultGlobalSettings() ([]byte, error) {
+  defaultConfig := config.Config{BaseBranch: "develop", PullFirst: true, HandleDirtyRepo: config.ABORT}
+  return defaultConfig.ToJSON()
+}
+
+func getDefaultGlobalData() ([]byte, error) {
+  defaultData := config.Data{Dimensions:make([]config.Dimension, 0), CurrentDimension: -1}
+  return defaultData.ToJSON()
 }
 
 func check(err error) {

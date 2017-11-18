@@ -1,7 +1,12 @@
 package subcommands
 
+import (
+  "fmt"
+)
+
 type CurrentDimension struct{}
 
-func (c CurrentDimension) run(args []string) error {
+func (c CurrentDimension) Run(args []string) error {
+  fmt.Println("CurrentDimension called with args: ", args)
   return nil
 }

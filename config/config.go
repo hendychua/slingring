@@ -1,5 +1,9 @@
 package config
 
+import (
+  "encoding/json"
+)
+
 // HandleDirtyRepoOption is an enum of options when switching branches in a dirty repo.
 type HandleDirtyRepoOption uint
 
@@ -36,4 +40,19 @@ type Config struct {
 
   // Choice of action when the repo has uncommitted changes.
   HandleDirtyRepo HandleDirtyRepoOption `json:"handleDirtyRepo"`
+}
+
+// Data is a struct that stores information regarding a user's setup.
+type Data struct {
+  Dimensions []Dimension
+  // CurrentDimension is an index pointing to Dimensions to indicate the currently set Dimension.
+  CurrentDimension int
+}
+
+func (c Config) ToJSON() ([]byte, error) {
+  return json.MarshalIndent(c, "", "  ") // 2-spaces indentation
+}
+
+func (d Data) ToJSON() ([]byte, error) {
+  return json.MarshalIndent(d, "", "  ") // 2-spaces indentation
 }

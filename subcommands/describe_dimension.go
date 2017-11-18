@@ -1,7 +1,12 @@
 package subcommands
 
+import (
+  "fmt"
+)
+
 type DescribeDimension struct{}
 
-func (d DescribeDimension) run(args []string) error {
+func (d DescribeDimension) Run(args []string) error {
+  fmt.Println("DescribeDimension called with args: ", args)
   return nil
 }
