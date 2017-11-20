@@ -150,7 +150,7 @@ func writeDefaultGlobalSettings() error {
 }
 
 func writeDefaultGlobalData() error {
-  defaultData := config.Data{Dimensions:make(map[string]config.Dimension, 0), CurrentDimension: -1}
+  defaultData := config.Data{Dimensions:make(map[string]config.Dimension, 0), CurrentDimension: ""}
   return defaultData.DataToGlobalDataJSONFile()
 }
 

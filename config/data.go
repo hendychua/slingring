@@ -8,8 +8,8 @@ import (
 // Data is a struct that stores information regarding a user's setup.
 type Data struct {
   Dimensions map[string]Dimension
-  // CurrentDimension is an index pointing to Dimensions to indicate the currently set Dimension.
-  CurrentDimension int
+  // CurrentDimension indicates the current default Dimension.
+  CurrentDimension string
 }
 
 // HasDimensionNamed checks whether there is a Dimension named name.

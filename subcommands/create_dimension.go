@@ -7,7 +7,6 @@ import (
   "log"
   "fmt"
 
-  "github.com/hendychua/slingring/utils"
   "github.com/hendychua/slingring/config"
 )
 
@@ -28,9 +27,16 @@ func (c CreateDimension) Run(args []string) error {
   }
 
   dataJSONContents, err := ioutil.ReadFile(config.GetGlobalDataFile())
-  utils.Check(err)
+  if err != nil {
+    return err
+  }
+
   data := config.Data{}
-  config.DataFromJSON(dataJSONContents, &data)
+  err = config.DataFromJSON(dataJSONContents, &data)
+  if err != nil {
+    return err
+  }
+
   log.Println("data read from JSON file: ", data)
 
   if data.HasDimensionNamed(name) {
@@ -40,7 +46,6 @@ func (c CreateDimension) Run(args []string) error {
   newDimension := config.Dimension{Name: name, Projects: make([]config.Project, 0)}
   data.Dimensions[name] = newDimension
 
-  data.DataToGlobalDataJSONFile()
-
-  return nil
+  err = data.DataToGlobalDataJSONFile()
+  return err
 }
