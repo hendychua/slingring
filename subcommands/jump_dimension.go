@@ -10,23 +10,25 @@ import (
 
 // JumpDimension is a command that jumps to another dimension and setting it
 // as the current Dimension.
+// If no argument is provided, this command unsets the current dimension.
 type JumpDimension struct{}
 
 // Run sets the current Dimension to Dimension with <name>.
+// If no argument is provided, this command unsets the current dimension.
 func (j JumpDimension) Run(args []string) error {
-  if len(args) != 1 {
-    return errors.New("illegal usage: JumpDimension takes in 1 argument")
+  data, err := config.GetGlobalData()
+  if err != nil {
+    return err
+  }
+
+  if len(args) <= 0 {
+    return setCurrentDimension(data, "")
   }
 
   name := strings.TrimSpace(strings.ToLower(args[0]))
 
   if len(name) <= 0 {
     return errors.New("illegal name for Dimension: Cannot be empty")
-  }
-
-  data, err := config.GetGlobalData()
-  if err != nil {
-    return err
   }
 
   if data.HasDimensionNamed(name) == false {
@@ -39,6 +41,10 @@ func (j JumpDimension) Run(args []string) error {
   // If project does not have branch named <name>, checkout -b to it.
   // return errors when it happens.
 
-  data.CurrentDimension = name
-  return data.DataToGlobalDataJSONFile()
+  return setCurrentDimension(data, name)
+}
+
+func setCurrentDimension(d *config.Data, dimension string) error {
+  d.CurrentDimension = dimension
+  return d.DataToGlobalDataJSONFile()
 }

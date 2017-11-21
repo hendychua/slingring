@@ -84,7 +84,7 @@ func main() {
       Name: "jump",
       Usage: "set current dimension",
       UsageText: fmt.Sprintf("%s jump [<name>]", appName),
-      Description: "name - name of dimension to jump to\n",
+      Description: "name - name of dimension to jump to. If name is not provided, this command unsets the current dimension.\n",
       Category: "Dimension",
       Action: func(c *cli.Context) error {
         subcommand := subcommands.JumpDimension{}
@@ -99,8 +99,24 @@ func main() {
       Category: "Project",
       Action: func(c *cli.Context) error {
         subcommand := subcommands.AddProject{}
-        // TODO: if global option "dimension" is not provided, should get the current dimension context. If it is also not set, error out.
-        return exitOneOnError(subcommand.Run(c.GlobalString("dimension"), c.Args()))
+        var dimensionToAddTo string
+        if len(c.GlobalString("dimension")) > 0 {
+          dimensionToAddTo = c.GlobalString("dimension")
+        } else {
+          data, err := config.GetGlobalData()
+          if err != nil {
+            return exitOneOnError(err)
+          }
+
+          if len(data.CurrentDimension) <= 0 {
+            return exitOneOnError(fmt.Errorf("error: %s%s",
+              "no current dimension is set and no dimension is specified with global option. ",
+              "Use global option --dimension (-d) to specify a dimension to add project path to."))
+          }
+
+          dimensionToAddTo = data.CurrentDimension
+        }
+        return exitOneOnError(subcommand.Run(dimensionToAddTo, c.Args()))
       },
     },
   }
