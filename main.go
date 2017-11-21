@@ -119,6 +119,7 @@ func main() {
         return exitOneOnError(subcommand.Run(dimensionToAddTo, c.Args()))
       },
     },
+    // TODO: remove-project command
   }
 
   app.Run(os.Args)
