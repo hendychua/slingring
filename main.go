@@ -93,9 +93,9 @@ func main() {
     },
     {
       Name: "add-project",
-      Usage: "add a project to dimension",
-      UsageText: fmt.Sprintf("%s add-project <path>", appName),
-      Description: "Add a project path to dimension.\n   path - directory to add to dimension.\n",
+      Usage: "add project(s) to dimension",
+      UsageText: fmt.Sprintf("%s add-project <path>...", appName),
+      Description: "Add project path(s) to dimension.\n   path - directory to add to dimension.\n",
       Category: "Project",
       Action: func(c *cli.Context) error {
         subcommand := subcommands.AddProject{}
