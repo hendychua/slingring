@@ -18,23 +18,31 @@ func (d Data) HasDimensionNamed(name string) bool {
   return ok
 }
 
-// DataFromJSON converts contents to data.
-func DataFromJSON(contents []byte, data *Data)  error {
-  err := json.Unmarshal(contents, data)
-  return err
+// GetGlobalData converts contents in the global data file to data.
+func GetGlobalData() (*Data, error) {
+  dataJSONContents, err := ioutil.ReadFile(GetGlobalDataFile())
+  if err != nil {
+    return nil, err
+  }
+
+  data := Data{}
+  err = json.Unmarshal(dataJSONContents, &data)
+  if err != nil {
+    return nil, err
+  }
+
+  return &data, nil
 }
 
 // DataToGlobalDataJSONFile write d to global data JSON file.
+// This rewrites the whole file and can be problematic (slow) when the data gets huge.
+// TODO: improve it by writing only the diff.
 func (d Data) DataToGlobalDataJSONFile() error {
-  dataJSON, err := d.toJSON()
+  dataJSON, err := json.MarshalIndent(d, "", "  ") // 2-spaces indentation
   if err != nil {
     return err
   }
 
   err = ioutil.WriteFile(GetGlobalDataFile(), dataJSON, 0644)
   return err
-}
-
-func (d Data) toJSON() ([]byte, error) {
-  return json.MarshalIndent(d, "", "  ") // 2-spaces indentation
 }

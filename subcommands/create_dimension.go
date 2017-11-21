@@ -3,8 +3,6 @@ package subcommands
 import (
   "strings"
   "errors"
-  "io/ioutil"
-  "log"
   "fmt"
 
   "github.com/hendychua/slingring/config"
@@ -26,18 +24,10 @@ func (c CreateDimension) Run(args []string) error {
     return errors.New("illegal name for Dimension: Cannot be empty")
   }
 
-  dataJSONContents, err := ioutil.ReadFile(config.GetGlobalDataFile())
+  data, err := config.GetGlobalData()
   if err != nil {
     return err
   }
-
-  data := config.Data{}
-  err = config.DataFromJSON(dataJSONContents, &data)
-  if err != nil {
-    return err
-  }
-
-  log.Println("data read from JSON file: ", data)
 
   if data.HasDimensionNamed(name) {
     return fmt.Errorf("fatal error: already has Dimension named '%s'", name)

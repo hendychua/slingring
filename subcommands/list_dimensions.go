@@ -1,8 +1,6 @@
 package subcommands
 
 import (
-  "io/ioutil"
-  "log"
   "fmt"
   "strings"
   "sort"
@@ -17,18 +15,10 @@ type ListDimensions struct{}
 // Run lists all the dimensions created in alphabetical order.
 // The current dimension has an annotation of * followed by a space before the dimension name.
 func (l ListDimensions) Run(args []string) error {
-  dataJSONContents, err := ioutil.ReadFile(config.GetGlobalDataFile())
+  data, err := config.GetGlobalData()
   if err != nil {
     return err
   }
-
-  data := config.Data{}
-  err = config.DataFromJSON(dataJSONContents, &data)
-  if err != nil {
-    return err
-  }
-
-  log.Println("data read from JSON file: ", data)
 
   var padding = ""
   if len(data.CurrentDimension) > 0 {
