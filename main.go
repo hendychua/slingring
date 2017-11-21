@@ -81,13 +81,13 @@ func main() {
       },
     },
     {
-      Name: "current-dimension",
-      Usage: "show or set current dimension",
-      UsageText: fmt.Sprintf("%s current-dimension [<name>]", appName),
-      Description: "If <name> is not provided, show the current dimension. If <name> is provided, set the current dimension to <name>.\n",
+      Name: "jump",
+      Usage: "set current dimension",
+      UsageText: fmt.Sprintf("%s jump [<name>]", appName),
+      Description: "name - name of dimension to jump to\n",
       Category: "Dimension",
       Action: func(c *cli.Context) error {
-        subcommand := subcommands.CurrentDimension{}
+        subcommand := subcommands.JumpDimension{}
         return exitOneOnError(subcommand.Run(c.Args()))
       },
     },
@@ -145,7 +145,7 @@ func maybeCreateGlobalFile(f string,fileType string) {
 }
 
 func writeDefaultGlobalSettings() error {
-  defaultConfig := config.Config{BaseBranch: "develop", PullFirst: true, HandleDirtyRepo: config.ABORT}
+  defaultConfig := config.Config{BaseBranch: "develop", PullFirst: true, HandleDirtyRepo: config.AbortAll}
   return defaultConfig.ConfigToGlobalSettingsJSONFile()
 }
 

@@ -4,14 +4,19 @@ package config
 type HandleDirtyRepoOption uint
 
 const (
-  // ABORT abort switching branches and errors out.
-  ABORT HandleDirtyRepoOption = iota
-  // STASH stash changes before switching branches.
-  STASH
+  // AbortAll abort switching branches and errors out.
+  AbortAll HandleDirtyRepoOption = iota
+
+  // AbortContinue abort switching branches in one project and
+  // continues to switch branches in other projects in the Dimension.
+  AbortContinue
+
+  // Stash stash changes before switching branches.
+  Stash
 )
 
 var handleDirtyRepoOptions = []string{
-  "ABORT", "STASH",
+  "AbortAll","AbortContinue", "Stash",
 }
 
 // Ordinal returns the int value for the enum.

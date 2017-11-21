@@ -15,7 +15,7 @@ type DescribeDimension struct{}
 // If such a Dimension does not exist, the command returns an error.
 func (d DescribeDimension) Run(args []string) error {
   if len(args) != 1 {
-    return errors.New("illegal usage: DeleteDimension takes in 1 argument")
+    return errors.New("illegal usage: DescribeDimension takes in 1 argument")
   }
 
   name := strings.TrimSpace(strings.ToLower(args[0]))
@@ -29,26 +29,27 @@ func (d DescribeDimension) Run(args []string) error {
     return err
   }
 
-  if dimension, ok := data.Dimensions[name]; !ok {
+  dimension, ok := data.Dimensions[name]
+  if !ok {
     return fmt.Errorf("fatal error: no Dimension named '%s'", name)
-  } else {
-    // TODO: formatting the output to align the left columns can be done in a better way.
-    fmt.Printf("Name:               %s\n", dimension.Name)
-    if strings.EqualFold(data.CurrentDimension, dimension.Name) {
-      fmt.Printf("Current default:    yes\n\n")
-    } else {
-      fmt.Printf("Current default:    no\n\n")
-    }
-    if len(dimension.Projects) > 0 {
-      fmt.Printf("Projects:\n")
-      for _, project := range dimension.Projects {
-        fmt.Printf("%s\n", project)
-      }
-    } else {
-      fmt.Printf("(No projects added to dimension.)\n")
-    }
-    fmt.Println()
   }
+
+  // TODO: formatting the output to align the left columns can be done in a better way.
+  fmt.Printf("Name:               %s\n", dimension.Name)
+  if strings.EqualFold(data.CurrentDimension, dimension.Name) {
+    fmt.Printf("Current default:    yes\n\n")
+  } else {
+    fmt.Printf("Current default:    no\n\n")
+  }
+  if len(dimension.Projects) > 0 {
+    fmt.Printf("Projects:\n")
+    for _, project := range dimension.Projects {
+      fmt.Printf("%s\n", project)
+    }
+  } else {
+    fmt.Printf("(No projects added to dimension.)\n")
+  }
+  fmt.Println()
 
   return nil
 }
