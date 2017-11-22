@@ -99,27 +99,29 @@ func main() {
       Category: "Project",
       Action: func(c *cli.Context) error {
         subcommand := subcommands.AddProject{}
-        var dimensionToAddTo string
-        if len(c.GlobalString("dimension")) > 0 {
-          dimensionToAddTo = c.GlobalString("dimension")
-        } else {
-          data, err := config.GetGlobalData()
-          if err != nil {
-            return exitOneOnError(err)
-          }
-
-          if len(data.CurrentDimension) <= 0 {
-            return exitOneOnError(fmt.Errorf("error: %s%s",
-              "no current dimension is set and no dimension is specified with global option. ",
-              "Use global option --dimension (-d) to specify a dimension to add project path to."))
-          }
-
-          dimensionToAddTo = data.CurrentDimension
+        dimensionToAddTo, err := getDimensionToWorkOn(c.GlobalString("dimension"))
+        if err != nil {
+          return exitOneOnError(err)
         }
+
         return exitOneOnError(subcommand.Run(dimensionToAddTo, c.Args()))
       },
     },
-    // TODO: remove-project command
+    {
+      Name: "remove-project",
+      Usage: "remove project(s) to dimension",
+      UsageText: fmt.Sprintf("%s remove-project <path>...", appName),
+      Description: "Remove project path(s) from dimension.\n   path - directory to remove from dimension.\n",
+      Category: "Project",
+      Action: func(c *cli.Context) error {
+        subcommand := subcommands.RemoveProject{}
+        dimensionToRemoveFrom, err := getDimensionToWorkOn(c.GlobalString("dimension"))
+        if err != nil {
+          return exitOneOnError(err)
+        }
+        return exitOneOnError(subcommand.Run(dimensionToRemoveFrom, c.Args()))
+      },
+    },
   }
 
   app.Run(os.Args)
@@ -169,6 +171,26 @@ func writeDefaultGlobalSettings() error {
 func writeDefaultGlobalData() error {
   defaultData := config.Data{Dimensions:make(map[string]config.Dimension, 0), CurrentDimension: ""}
   return defaultData.DataToGlobalDataJSONFile()
+}
+
+func getDimensionToWorkOn(globalOptionValue string) (string, error) {
+  if len(globalOptionValue) > 0 {
+    return globalOptionValue, nil
+
+  } else {
+    data, err := config.GetGlobalData()
+    if err != nil {
+      return "", err
+    }
+
+    if len(data.CurrentDimension) <= 0 {
+      return "", fmt.Errorf("error: %s%s",
+        "no current dimension is set and no dimension is specified with global option. ",
+        "Use global option --dimension (-d) to specify a dimension to modify.")
+    }
+
+    return data.CurrentDimension, nil
+  }
 }
 
 func exitOneOnError(err error) error {
