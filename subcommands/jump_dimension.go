@@ -41,7 +41,13 @@ func (j JumpDimension) Run(args []string) error {
   // If project does not have branch named <name>, checkout -b to it.
   // return errors when it happens.
 
-  return setCurrentDimension(data, name)
+  err = setCurrentDimension(data, name)
+
+  if err == nil {
+    fmt.Printf("Jumpted to '%s'\n", name)
+  }
+
+  return err
 }
 
 func setCurrentDimension(d *config.Data, dimension string) error {

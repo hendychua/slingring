@@ -37,5 +37,10 @@ func (c CreateDimension) Run(args []string) error {
   data.Dimensions[name] = newDimension
 
   err = data.DataToGlobalDataJSONFile()
+
+  if err == nil {
+    fmt.Printf("Dimension '%s' created.\n", name)
+  }
+
   return err
 }

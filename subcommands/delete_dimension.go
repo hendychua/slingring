@@ -35,5 +35,11 @@ func (d DeleteDimension) Run(args []string) error {
 
   delete(data.Dimensions, name)
 
-  return data.DataToGlobalDataJSONFile()
+  err = data.DataToGlobalDataJSONFile()
+
+  if err == nil {
+    fmt.Printf("Dimension '%s' deleted.\n", name)
+  }
+
+  return err
 }

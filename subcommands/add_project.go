@@ -49,11 +49,12 @@ func (a AddProject) Run(dimensionToWorkOn string, args []string) error {
 
   data.Dimensions[dimensionToWorkOn] = dimension
   err = data.DataToGlobalDataJSONFile()
-  if err != nil {
-    return err
-  }
 
   // TODO: jump to dimension for all the added projects.
 
-  return nil
+  if err == nil {
+    fmt.Printf("Projects currently in dimension '%s': %s.\n", dimension.Name, dimension.Projects)
+  }
+
+  return err
 }

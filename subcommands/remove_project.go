@@ -52,9 +52,10 @@ func (r RemoveProject) Run(dimensionToWorkOn string, args []string) error {
 
   data.Dimensions[dimensionToWorkOn] = dimension
   err = data.DataToGlobalDataJSONFile()
-  if err != nil {
-    return err
+
+  if err == nil {
+    fmt.Printf("Projects remaining in dimension '%s': %s.\n", dimension.Name, dimension.Projects)
   }
 
-  return nil
+  return err
 }
