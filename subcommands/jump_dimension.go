@@ -83,7 +83,7 @@ func jumpDimensionForProjects(c *config.Config, dimension config.Dimension) erro
       return err
     } else if isCurrent {
       // already on the dimension. don't have to checkout.
-      fmt.Printf("'%s' already on '%s'. Nothing to do.", project.ProjectPath, branchName)
+      fmt.Printf("'%s' already on '%s'. Nothing to do.\n", project.ProjectPath, branchName)
       continue
     }
 
