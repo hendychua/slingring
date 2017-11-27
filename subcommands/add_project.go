@@ -5,6 +5,7 @@ import (
   "errors"
   "os"
   "path/filepath"
+  "strings"
 
   "github.com/hendychua/slingring/config"
 )
@@ -30,6 +31,8 @@ func (a AddProject) Run(dimensionToWorkOn string, args []string) error {
     return fmt.Errorf("fatal error: no Dimension named '%s'", dimensionToWorkOn)
   }
 
+  newProjects := make([]config.Project, 0)
+
   for _, projectPath := range args {
     absProjectPath, absErr := filepath.Abs(projectPath)
     if absErr != nil {
@@ -44,17 +47,27 @@ func (a AddProject) Run(dimensionToWorkOn string, args []string) error {
 
     // absProjectPath exists
     newProject := config.Project{ProjectPath: absProjectPath}
+    newProjects = append(newProjects, newProject)
     dimension.Projects = append(dimension.Projects, newProject)
   }
 
   data.Dimensions[dimensionToWorkOn] = dimension
   err = data.DataToGlobalDataJSONFile()
 
-  // TODO: jump to dimension for all the added projects.
-
-  if err == nil {
-    fmt.Printf("Projects currently in dimension '%s': %s.\n", dimension.Name, dimension.Projects)
+  if err != nil {
+    return err
   }
 
-  return err
+  fmt.Printf("New projects added to dimension '%s': %s.\n", dimension.Name, newProjects)
+
+  globalConfig, err := config.GetGlobalSettings()
+  if err != nil {
+    return err
+  }
+
+  if strings.EqualFold(dimension.Name, data.CurrentDimension) {
+    return JumpDimensionForProjects(globalConfig, dimension, newProjects...)
+  }
+
+  return nil
 }

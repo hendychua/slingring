@@ -41,7 +41,7 @@ func (j JumpDimension) Run(args []string) error {
     return err
   }
 
-  err = jumpDimensionForProjects(globalConfig, data.Dimensions[name])
+  err = JumpDimensionForProjects(globalConfig, data.Dimensions[name])
   if err != nil {
     return err
   }
@@ -55,8 +55,24 @@ func (j JumpDimension) Run(args []string) error {
   return err
 }
 
-func jumpDimensionForProjects(c *config.Config, dimension config.Dimension) error {
-  dirtyProjects, err := getDirtyProjectsInDimension(dimension)
+// JumpDimensionForProjects switches the branch to a branch with the dimension's name,
+// aka jumping dimension.
+// Before jumping dimension for each project, this method will check the config on how to handle dirty repos.
+// It also checks the config for whether to pull first before jumping and the base branch
+// to create new branches (if necessary) from.
+// By default, if nothing is passed in for projects list, thie method operates on each project in
+// dimension. If projects is a non-empty list, this method operates on each project in the list.
+func JumpDimensionForProjects(c *config.Config, dimension config.Dimension, projects ...config.Project) error {
+  branchName := dimension.Name
+
+  var projectsList []config.Project
+  if len(projects) == 0 {
+    projectsList = dimension.Projects
+  } else {
+    projectsList = projects
+  }
+
+  dirtyProjects, err := getDirtyProjectsIfNotOnBranch(branchName, projectsList...)
   if err != nil {
     return err
   }
@@ -68,7 +84,7 @@ func jumpDimensionForProjects(c *config.Config, dimension config.Dimension) erro
     }
 
     if c.HandleDirtyRepo == config.AbortAll {
-      return fmt.Errorf("aborting dimension jump because option HandleDirtyRepo is set to AbortAll")
+      return fmt.Errorf("error: aborting dimension jump because option HandleDirtyRepo is set to AbortAll")
     } else if c.HandleDirtyRepo == config.AbortContinue {
       fmt.Println("Dimension jump will be skipped for dirty repos because option HandleDirtyRepo is set to AbortContinue.")
     } else if c.HandleDirtyRepo == config.Stash {
@@ -76,9 +92,7 @@ func jumpDimensionForProjects(c *config.Config, dimension config.Dimension) erro
     }
   }
 
-  branchName := dimension.Name
-
-  for _, project := range dimension.Projects {
+  for _, project := range projectsList {
     if isCurrent, err := gitutils.IsCurrentBranch(project.ProjectPath, branchName); err != nil {
       return err
     } else if isCurrent {
@@ -124,9 +138,17 @@ func jumpDimensionForProjects(c *config.Config, dimension config.Dimension) erro
   return nil
 }
 
-func getDirtyProjectsInDimension(dimension config.Dimension) (map[config.Project]bool, error) {
+func getDirtyProjectsIfNotOnBranch(branchName string, projects ...config.Project) (map[config.Project]bool, error) {
   dirtyProjects := make(map[config.Project]bool, 0)
-  for _, project := range dimension.Projects {
+  for _, project := range projects {
+    if isCurrent, err := gitutils.IsCurrentBranch(project.ProjectPath, branchName); err != nil {
+      return nil, err
+    } else if isCurrent {
+      // if the project is already on the branch, we don't really need to care if it is dirty
+      // because we won't attempt to switch branch in it.
+      continue
+    }
+
     if clean, err := gitutils.IsClean(project.ProjectPath); err != nil {
       return nil, err
     } else if !clean {
