@@ -28,6 +28,22 @@ func (c Config) ConfigToGlobalSettingsJSONFile() error {
   return err
 }
 
+// GetGlobalSettings converts contents in the global settings file to config struct.
+func GetGlobalSettings() (*Config, error) {
+  settingsJSONContents, err := ioutil.ReadFile(GetGlobalSettingsFile())
+  if err != nil {
+    return nil, err
+  }
+
+  config := Config{}
+  err = json.Unmarshal(settingsJSONContents, &config)
+  if err != nil {
+    return nil, err
+  }
+
+  return &config, nil
+}
+
 func (c Config) toJSON() ([]byte, error) {
   return json.MarshalIndent(c, "", "  ") // 2-spaces indentation
 }

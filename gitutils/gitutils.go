@@ -43,11 +43,18 @@ func GitPull(dir string) error {
 }
 
 // GitCheckout switches to brancName in the directory.
-// If the branch does not exist, it will be created.
-func GitCheckout(dir string, branchName string) error {
+// If the branch does not exist, it returns an error.
+func GitCheckout(dir string, branchName string) (string, error) {
   cmd := exec.Command(gitCommand, "checkout", branchName)
   cmd.Dir = dir
-  checkoutOutput, err := cmd.CombinedOutput()
+  output, err := cmd.CombinedOutput()
+  return string(output), err
+}
+
+// GitCheckoutCreate switches to brancName in the directory.
+// If the branch does not exist, it will be created.
+func GitCheckoutCreate(dir string, branchName string) error {
+  checkoutOutput, err := GitCheckout(dir, branchName)
   if err == nil {
     return nil
   }
@@ -55,7 +62,8 @@ func GitCheckout(dir string, branchName string) error {
   // An error occurred with the previous command.
   // It is possible the branch does not exist. Create it.
 
-  cmd = exec.Command(gitCommand, "checkout", "-b", branchName)
+  cmd := exec.Command(gitCommand, "checkout", "-b", branchName)
+  cmd.Dir = dir
   checkoutNewOutput, err := cmd.CombinedOutput()
   if err == nil {
     return nil
@@ -64,7 +72,7 @@ func GitCheckout(dir string, branchName string) error {
   return fmt.Errorf("Unable to check out '%s'. " +
     "Error executing 'checkout': '%s'. " +
     "Error executing 'checkout -b': '%s'", branchName,
-    string(checkoutOutput), string(checkoutNewOutput))
+    checkoutOutput, string(checkoutNewOutput))
 }
 
 // GitStash runs git stash in the directory.
