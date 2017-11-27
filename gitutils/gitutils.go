@@ -34,6 +34,29 @@ func IsClean(dir string) (bool, error) {
   return true, nil
 }
 
+// IsCurrentBranch checks if the repository is currently in the branch.
+func IsCurrentBranch(dir string, branchName string) (bool, error) {
+  cmd := exec.Command(gitCommand, "branch")
+  cmd.Dir = dir
+  statusOut, err := cmd.Output()
+  if err != nil {
+    return false, err
+  }
+
+  const prefix = "* "
+  currentBranch := ""
+  statusOutString := strings.TrimSpace(string(statusOut))
+  for _, line := range strings.Split(statusOutString, "\n") {
+    trimmedLine := strings.TrimSpace(line)
+    if strings.HasPrefix(trimmedLine, prefix) {
+      currentBranch = strings.TrimPrefix(trimmedLine, prefix)
+      break
+    }
+  }
+
+  return strings.EqualFold(currentBranch, branchName), nil
+}
+
 // GitPull runs "git pull" in the directory.
 func GitPull(dir string) error {
   cmd := exec.Command(gitCommand, "pull")

@@ -79,6 +79,14 @@ func jumpDimensionForProjects(c *config.Config, dimension config.Dimension) erro
   branchName := dimension.Name
 
   for _, project := range dimension.Projects {
+    if isCurrent, err := gitutils.IsCurrentBranch(project.ProjectPath, branchName); err != nil {
+      return err
+    } else if isCurrent {
+      // already on the dimension. don't have to checkout.
+      fmt.Printf("'%s' already on '%s'. Nothing to do.", project.ProjectPath, branchName)
+      continue
+    }
+
     if _, ok := dirtyProjects[project]; ok {
       // dirty
       if c.HandleDirtyRepo == config.AbortContinue {
