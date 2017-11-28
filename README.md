@@ -98,9 +98,9 @@ e.g.
   - Stash: stash uncommitted changes before switching branches. This will stash uncommited but not untracked changes.
 
 #### Installation
-`go get -u github.com/hendychua/slingring`
-`glide install`
-`go install`
+```go get -u github.com/hendychua/slingring
+glide install
+go install```
 
 #### Known limitations
 - This project writes to two files: `~/.slingring/globalData.json` and `~/.slingring/globalSettings.json`. JSON is probably not the most efficient way to write and read data (but it is the simplest).
