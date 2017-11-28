@@ -109,7 +109,7 @@ func main() {
     },
     {
       Name: "remove-project",
-      Usage: "remove project(s) to dimension",
+      Usage: "remove project(s) from dimension",
       UsageText: fmt.Sprintf("%s remove-project <path>...", appName),
       Description: "Remove project path(s) from dimension.\n   path - directory to remove from dimension.\n",
       Category: "Project",
@@ -120,6 +120,17 @@ func main() {
           return exitOneOnError(err)
         }
         return exitOneOnError(subcommand.Run(dimensionToRemoveFrom, c.Args()))
+      },
+    },
+    {
+      Name: "config",
+      Usage: "show or set global config",
+      UsageText: fmt.Sprintf("%s config <prop> <value> <prop> <value>...", appName),
+      Description: "Set global config.\n If the command is called without any arguments, show global config.",
+      Category: "Config",
+      Action: func(c *cli.Context) error {
+        subcommand := subcommands.ShowSetConfig{}
+        return exitOneOnError(subcommand.Run(c.Args()))
       },
     },
   }

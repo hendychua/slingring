@@ -1,5 +1,9 @@
 package config
 
+import (
+  "strings"
+)
+
 // HandleDirtyRepoOption is an enum of options when switching branches in a dirty repo.
 type HandleDirtyRepoOption uint
 
@@ -31,4 +35,17 @@ func (option HandleDirtyRepoOption) String() string {
 // Values returns the list of possible values in the enum.
 func (option HandleDirtyRepoOption) Values() *[]string {
  return &handleDirtyRepoOptions
+}
+
+// HandleDirtyRepoOptionFromString returns the int value
+// for the given string. Returns -1 if the string is not a valid
+// HandleDirtyRepoOption value.
+func HandleDirtyRepoOptionFromString(s string) int {
+  for i, val := range handleDirtyRepoOptions {
+    if strings.EqualFold(val, s) {
+      return i
+    }
+  }
+
+  return -1
 }
